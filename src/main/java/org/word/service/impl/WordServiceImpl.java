@@ -140,7 +140,7 @@ public class WordServiceImpl implements WordService {
                 	};
                 });
             }
-            
+            resultMap.put("serial", this.getSerial(result));
             resultMap.put("tables", result);
             resultMap.put("info", map.get("info"));
             
@@ -152,6 +152,36 @@ public class WordServiceImpl implements WordService {
     }
 	
 	/**
+     * <pre>
+     * 方法说明：
+     * </pre>
+     * @param result
+     * @return
+     */
+    private List<String> getSerial(List<Table> result) {
+        if (result == null) {
+            return null;
+        }
+        List<String> list = new ArrayList<>();
+        String preTitle = "";
+        int first = 0;
+        int second = 1;
+        for (Table table : result) {
+            if (!preTitle.equals(table.getTitle())) {
+                first++;
+                second = 1;
+                list.add(first+"");
+            } else {
+                list.add(first + "-" + second);
+            }
+            
+            second++;
+            preTitle = table.getTitle();
+        }
+        return list;
+    }
+
+    /**
 	 * 处理请求参数列表
 	 * @param parameters
 	 * @return
@@ -269,6 +299,9 @@ public class WordServiceImpl implements WordService {
         	while (modelNameIt.hasNext()) {
 				modeName = modelNameIt.next();
 				Map<String, Object> modeProperties=(Map<String, Object>)definitions.get(modeName).get("properties");
+				if (modeProperties == null || modeProperties.isEmpty()) {
+                    continue;
+                }
 				Iterator<Entry<String, Object>> pIt= modeProperties.entrySet().iterator();
 				
 				List<ResponseModelAttr> attrList=new ArrayList<>();

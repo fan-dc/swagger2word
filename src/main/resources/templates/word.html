@@ -57,16 +57,16 @@
 </head>
 
 <body>
-<div style="width:800px; margin: 0 auto" th:with="count=1">
+<div style="width:800px; margin: 0 auto" th:with="count=''">
     <div>
         <p class="doc_title" th:text="${info.title+'（'+info.version+'）'}"></p>
         <a class="download_btn" th:href="${'/downloadWord?url='+url}" th:if="${type!=1}">下载文档</a>
         <br>
     </div>
     <div th:each="table,iterStat:${tables}" style="margin-bottom:20px;">
-        <div th:with="preTitle=${iterStat.index>0 ? tables[iterStat.index-1].title : ''}, isSame=${table.title == preTitle}, count=${ table.title == preTitle ? count+1 : 1}">
+        <div th:with="preTitle=${iterStat.index>0 ? tables[iterStat.index-1].title : ''}, isSame=${table.title == preTitle}, count=${ isSame ? serial[iterStat.index] : #strings.concat(serial[iterStat.index],'-1')}">
             <!--这个是类的说明-->
-            <h4 class="first_title" th:if="${!isSame}" th:text="${isSame ? '' : #strings.concat(iterStat.count,'. ', table.title)}"></h4>
+            <h4 class="first_title" th:if="${!isSame}" th:text="${isSame ? '' : #strings.concat(serial[iterStat.index],'. ', table.title)}"></h4>
 
             <!--这个是每个请求的说明，方便生成文档后进行整理-->
             <h5 class="second_title" th:text="${count+'）'+table.tag}"></h5>

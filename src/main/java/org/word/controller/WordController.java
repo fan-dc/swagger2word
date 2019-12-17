@@ -49,6 +49,7 @@ public class WordController {
         model.addAttribute("type", type==null ? 0 : type);
         model.addAttribute("info", result.get("info"));
         model.addAttribute("tables", result.get("tables"));
+        model.addAttribute("serial", result.get("serial"));
         return "word";
     }
 
