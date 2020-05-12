@@ -24,6 +24,7 @@ import org.word.model.ResponseModelAttr;
 import org.word.model.Table;
 import org.word.service.WordService;
 import org.word.utils.JsonUtils;
+import org.word.utils.YamlUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -47,15 +48,20 @@ public class WordServiceImpl implements WordService {
     private String swaggerUrl;
 
 	@Override
-    public Map<String, Object> tableList(String jsonUrl) {
-        jsonUrl = StringUtils.defaultIfBlank(jsonUrl, swaggerUrl);
+    public Map<String, Object> tableList(String configUrl, String fmt) {
+	    configUrl = StringUtils.defaultIfBlank(configUrl, swaggerUrl);
         
         Map<String, Object> resultMap = new HashMap<>();
         List<Table> result = new ArrayList<>();
         try {
-            String jsonStr = restTemplate.getForObject(jsonUrl, String.class);
-            // convert JSON string to Map
-            Map<String, Object> map = JsonUtils.readValue(jsonStr, HashMap.class);
+            String configStr = restTemplate.getForObject(configUrl, String.class);
+            Map<String, Object> map;
+            if ("yaml".equalsIgnoreCase(fmt)) {
+                map = YamlUtils.readValue(configStr, HashMap.class);
+            } else {
+                // convert JSON string to Map
+                map = JsonUtils.readValue(configStr, HashMap.class);
+            }
             
             //解析model
             Map<String, Object> definitinMap = parseDefinitions(map);

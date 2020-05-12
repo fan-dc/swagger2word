@@ -43,8 +43,11 @@ public class WordController {
      */
     @Deprecated
     @RequestMapping("/toWord")
-    public String getWord(Model model, @RequestParam(value = "url", required = false) String url, Integer type) {
-        Map<String, Object> result = tableService.tableList(url);
+    public String getWord(Model model,
+            @RequestParam(value = "url", required = false) String url,
+            @RequestParam(value = "fmt", required = false) String fmt,
+            Integer type) {
+        Map<String, Object> result = tableService.tableList(url, fmt);
         model.addAttribute("url", StringUtils.defaultIfBlank(url, StringUtils.EMPTY));
         model.addAttribute("type", type==null ? 0 : type);
         model.addAttribute("info", result.get("info"));

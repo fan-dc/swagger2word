@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.word</groupId>
     <artifactId>Swagger2Word</artifactId>
@@ -31,7 +31,7 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
-        <!--lombok-->
+        <!--lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -43,6 +43,10 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
         </dependency>
     </dependencies>
     <build>
@@ -76,11 +80,11 @@
                 <executions>
                     <execution>
                         <phase>package</phase>
-                        <!--可以把依赖的包都打包到生成的Jar包中-->
+                        <!--可以把依赖的包都打包到生成的Jar包中 -->
                         <goals>
                             <goal>repackage</goal>
                         </goals>
-                        <!--可以生成不含依赖包的不可执行Jar包-->
+                        <!--可以生成不含依赖包的不可执行Jar包 -->
                         <configuration>
                             <classifier>exec</classifier>
                         </configuration>
