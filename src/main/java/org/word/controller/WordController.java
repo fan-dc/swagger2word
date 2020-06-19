@@ -2,6 +2,7 @@ package org.word.controller;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import org.word.model.Table;
 import org.word.service.WordService;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -25,8 +27,11 @@ import java.util.Map;
 @Controller
 public class WordController {
 
-    @Autowired
+    @Resource(name = "wordServiceImpl")
     private WordService tableService;
+    
+    @Resource(name = "wordServiceForV3Impl")
+    private WordService tableServiceForV3;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -47,7 +52,8 @@ public class WordController {
             @RequestParam(value = "url", required = false) String url,
             @RequestParam(value = "fmt", required = false) String fmt,
             Integer type) {
-        Map<String, Object> result = tableService.tableList(url, fmt);
+//        Map<String, Object> result = tableService.tableList(url, fmt);
+        Map<String, Object> result = tableServiceForV3.tableList(url, fmt);
         model.addAttribute("url", StringUtils.defaultIfBlank(url, StringUtils.EMPTY));
         model.addAttribute("type", type==null ? 0 : type);
         model.addAttribute("info", result.get("info"));

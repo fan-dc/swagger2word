@@ -1,0 +1,1563 @@
+openapi: 3.0.1
+info:
+  title: Sample API
+  description: API description in Markdown.
+  version: 1.0.0
+servers:
+  - url: 'https://api.example.com'
+tags:
+  - name: alarm
+    description: 告警服务
+  - name: trace
+    description: 链路追踪
+  - name: monitor
+    description: 监控
+  - name: gray
+    description: 灰度
+
+paths:
+  /alarm-rules:
+    get:
+      summary: list rules
+      operationId: list-rules
+      tags:
+        - alarm
+      parameters:
+        - name: namespace
+          schema:
+            type: string
+          in: query
+          description: namespace
+          example: default
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AlarmRule'
+    post:
+      tags:
+        - alarm
+      summary: create rule
+      operationId: create-rule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlarmRule'
+      responses:
+        201:
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlarmRule'
+    delete:
+      tags:
+        - alarm
+      summary: delete rules
+      operationId:  delete-rules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AlarmRule'
+      responses:
+        204:
+          description: deleted
+
+
+  /alarm-rules/{ruleName}:
+    parameters:
+      - name: ruleName
+        schema:
+          type: string
+        required: true
+        example: 'default-test-web-service-created-by-servicemsh'
+        in: path
+    put:
+      tags:
+        - alarm
+      summary: update rule
+      operationId: update-alarm-rule
+      responses:
+        200:
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlarmRule'
+    delete:
+      tags:
+        - alarm
+      summary: delete rule
+      operationId: delete-alarm-rule
+      responses:
+        204:
+          description: deleted
+  /trace/traces:
+    get:
+      summary: trace list
+      tags:
+        - trace
+      parameters:
+        - name: namespace
+          schema:
+            type: string
+          in: query
+          description: 命名空间
+          example: default
+        - name: app_name
+          schema:
+            type: string
+          in: query
+          description: 应用名称
+          example: default
+        - name: service
+          schema:
+            type: string
+          in: query
+          description: 服务名称
+          example: default
+          required: true
+        - name: operation
+          schema:
+            type: string
+          in: query
+          description: operation
+          example: default
+        - name: instance_name
+          schema:
+            type: string
+          in: query
+          description: 实例名称
+          example: default
+        - name: trace_id
+          schema:
+            type: string
+          in: query
+          description: trace id
+          example: default
+        - name: "start_time"
+          in: "query"
+          schema:
+            type: string
+        - name: "end_time"
+          in: "query"
+          schema:
+            type: string
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TraceInfo'
+
+  /trace/traces/{traceId}:
+    get:
+      summary: one trace
+      tags:
+        - trace
+      parameters:
+        - name: namespace
+          schema:
+            type: string
+          in: query
+          description: 命名空间
+          example: default
+        - name: app_name
+          schema:
+            type: string
+          in: query
+          description: 应用名称
+          example: default
+        - name: service
+          schema:
+            type: string
+          in: query
+          description: 服务名称
+          example: default
+          required: true
+        - name: operation
+          schema:
+            type: string
+          in: query
+          description: operation
+          example: default
+        - name: instance_name
+          schema:
+            type: string
+          in: query
+          description: 实例名称
+          example: default
+        - name: trace_id
+          schema:
+            type: string
+          in: path
+          description: trace id
+          example: default
+        - name: "start_time"
+          in: "query"
+          schema:
+            type: string
+        - name: "end_time"
+          in: "query"
+          schema:
+            type: string
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceInfo'
+  /alarms:
+    get:
+      summary: list alarms
+      operationId: list-alarms
+      tags:
+        - alarm
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Rows'
+        - name: namespace
+          in: query
+          schema:
+            type: string
+            required: true
+          description: namespace
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - read
+              - unread
+          description: 'null is query all'
+        - name: service_name
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    $ref: '#/components/schemas/Page'
+                  list:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alarm'
+    delete:
+      summary: delete alrams
+      operationId: delete-alarms
+      tags:
+        - alarm
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Alarm'
+      responses:
+        204:
+          description: deleted
+    patch:
+      summary: update alarms
+      operationId: update-alarms
+      tags:
+        - alarm
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Alarm'
+      responses:
+        204:
+          description: updated
+
+  /alarms/{id}:
+    parameters:
+      - name: id
+        in: path
+        example: 12
+        description: id
+        schema:
+          type: integer
+          format: int64
+    patch:
+      summary:  update alarm
+      operationId: update-alarm
+      tags:
+        - alarm
+      responses:
+        200:
+          description: sucess
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alarm'
+    delete:
+      summary: delete alarm
+      tags:
+        - alarm
+      operationId: delete-alarm
+      responses:
+        200:
+          description: sucess
+
+
+  /trace/services:
+    get:
+      summary: services list
+      tags:
+        - trace
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceInfo'
+  /trace/services/{service}/operations:
+    get:
+      summary: get operations by service
+      tags:
+        - trace
+      parameters:
+        - name: service
+          schema:
+            type: string
+          in: path
+          description: 服务名称
+          example: default
+          required: true
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationsInfo'
+
+  /trace/services/{service}/operations-metrics:
+    get:
+      summary: get operations by service
+      tags:
+        - trace
+      parameters:
+        - name: service
+          schema:
+            type: string
+          in: path
+          description: 服务名称
+          example: default
+          required: true
+        - name: "start_time"
+          in: "query"
+          schema:
+            type: string
+          description: 数据开始时间
+        - name: "end_time"
+          in: "query"
+          schema:
+            type: string
+          description: 数据结束时间，当前时间。
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationsMetrics'
+
+
+  /monitor/services-nodes/metrics:
+    get:
+      summary: 获取服务指标，包含实例，暂时后端不做分页。
+      tags:
+        - monitor
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Rows'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Reverse'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/Namespaces'
+        - name: start
+          in: query
+          schema:
+            type: integer
+          required: false
+          description: 数据开始时间，默认前一小时。
+        - name: end
+          in: query
+          schema:
+            type: integer
+          required: false
+          description: 数据结束时间，默认当前时间。
+      responses:
+        200:
+          description: 获取成功。
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    $ref: '#/components/schemas/Page'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NodeData'
+
+
+  /monitor/services/{service}/versioned/requests:
+    get:
+      summary: 获取服务请求数数据，按版本分，用于灰度发布界面。
+      tags:
+        - monitor
+      parameters:
+        - $ref: '#/components/parameters/Namespaces'
+        - $ref: '#/components/parameters/Service'
+        - name: start
+          in: query
+          schema:
+            type: integer
+          required: false
+          description: 数据开始时间，默认前一小时。
+        - name: end
+          in: query
+          schema:
+            type: integer
+          required: false
+          description: 数据结束时间，默认当前时间。
+      responses:
+        200:
+          description: 获取成功。
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MatrixItem'
+
+  /monitor/services/{service}/versioned/errors:
+    get:
+      summary: 获取服务错误请求数数据，按版本分，用于灰度发布界面。
+      tags:
+        - monitor
+      parameters:
+        - $ref: '#/components/parameters/Namespaces'
+        - $ref: '#/components/parameters/Service'
+        - name: start
+          in: query
+          schema:
+            type: integer
+            required: false
+          description: 数据开始时间，默认前一小时。
+        - name: end
+          in: query
+          schema:
+            type: integer
+            required: false
+          description: 数据结束时间，默认当前时间。
+      responses:
+        200:
+          description: 获取成功。
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MatrixItem'
+
+  /monitor/services/{service}/versioned/latency:
+    get:
+      summary: 获取服务延迟数据，按版本分，用于灰度发布界面。
+      tags:
+        - monitor
+      parameters:
+        - $ref: '#/components/parameters/Namespaces'
+        - $ref: '#/components/parameters/Service'
+        - name: start
+          in: query
+          schema:
+            type: integer
+            required: false
+          description: 数据开始时间，默认前一小时。
+        - name: end
+          in: query
+          schema:
+            type: integer
+            required: false
+          description: 数据结束时间，当前时间。
+      responses:
+        200:
+          description: 获取成功。
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MatrixItem'
+
+  /monitor/services/{service}/versioned/traffic-percent:
+    get:
+      summary: 获取服务灰度流量比例信息。
+      tags:
+        - monitor
+      parameters:
+        - $ref: '#/components/parameters/Namespaces'
+        - $ref: '#/components/parameters/Service'
+      responses:
+        200:
+          description: 获取成功。
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VersionedTrafficPercent'
+
+  /grays:
+    post:
+      summary: 创建灰度任务
+      operationId: grays-create
+      tags:
+        - gray
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrayDeploy'
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrayPhase'
+    delete:
+      summary: 取消灰度任务
+      operationId: grays-delete
+      tags:
+        - gray
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrayDelete'
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: string
+    get:
+      summary: 灰度历史记录
+      operationId: gray-history
+      tags:
+        - gray
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Rows'
+        - name: namespace
+          schema:
+            type: string
+          in: query
+          description: namespace
+          example: default
+        - name: service_name
+          schema:
+            type: string
+          in: query
+          description: service_name
+          example: service_name
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    $ref: '#/components/schemas/Page'
+                  list:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GrayHistory'
+
+  /grays/services:
+    get:
+      summary: 灰度发布选择服务列表
+      operationId: gray-service-running
+      tags:
+        - gray
+      parameters:
+        - name: namespace
+          schema:
+            type: string
+          in: query
+          description: namespace
+          example: default
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GrayServiceList'
+
+  /grays/image/tags:
+    get:
+      summary: 灰度镜像版本列表
+      operationId: gray-image-tags
+      tags:
+        - gray
+      parameters:
+        - name: namespace
+          schema:
+            type: string
+          in: query
+          description: 命名空间
+          example: default
+        - name: service_name
+          schema:
+            type: string
+          in: query
+          description: 服务名称
+          example: 服务名称
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deployment_name:
+                    type: string
+                    description: deployment名称
+                    example: "nginx-v1"
+                  name:
+                    type: string
+                    description: 镜像名称
+                    example: /docker.io/nginx
+                  version:
+                    type: string
+                    description: 服务当前的镜像版本
+                    example: "1.11.0"
+                  tags:
+                    type: array
+                    description: 镜像版本列表
+                    items:
+                      type: string
+                      example: "1.12.0"
+
+
+  /grays/cards:
+    get:
+      summary: 灰度发布卡片
+      operationId: grays-cards
+      tags:
+        - gray
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Rows'
+        - name: namespace
+          schema:
+            type: string
+          in: query
+          description: '命名空间 只能填写已经创建的，只能是小写字母，中划线，数字,开头和结尾不能是中划线'
+        - name: gray_status
+          schema:
+            type: integer
+          in: query
+          description: '查询灰度任务状态 "" 全部 un_deploy 未部署 deploying 部署中 deploy_success 部署成功 deploy_fail 部署失败 deploy_complete 部署策略已下发'
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page:
+                    $ref: '#/components/schemas/Page'
+                  list:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GrayCardList'
+  /grays/information:
+    get:
+      summary: 回显灰度任务和旧版本信息
+      operationId: grays-info
+      tags:
+        - gray
+      parameters:
+        - name: namespace
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: query
+          required: true
+          description: 任务名称
+          schema:
+            type: string
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrayInfo'
+
+
+  /grays/version:
+    patch:
+      summary: 灰度版本切换（上线/下线）
+      operationId: grays-version
+      tags:
+        - gray
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GraySwitch'
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /grays/deploy:
+    patch:
+      summary: 部署灰度版本
+      operationId: grays-deploy
+      tags:
+        - gray
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrayImage'
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrayPhase'
+  /grays/phase:
+    get:
+      summary: 查看部署状态
+      operationId: grays-phase
+      tags:
+        - gray
+      parameters:
+        - name: namespace
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: query
+          required: true
+          description: 任务名称
+          schema:
+            type: string
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrayPhase'
+  /grays/strategy:
+    patch:
+      summary: 灰度策略配置
+      operationId: grays-strategy
+      tags:
+        - gray
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrayStrategy'
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrayPhase'
+
+
+components:
+  schemas:
+    OperationsInfo:
+      type: object
+      properties:
+        data:
+          type: array
+          description: operations list
+          items:
+            type: string
+            description: operation name
+            example:
+              "HTTP GET /customer"
+        total:
+          type: integer
+          example:
+            7
+        limit:
+          type: integer
+          example:
+            0
+        offset:
+          type: integer
+          example:
+            0
+        errors:
+          type: string
+    OperationsMetrics:
+      type: object
+      properties:
+        data:
+          type: array
+          description: operations list
+          items:
+            $ref: '#/components/schemas/OperationMetric'
+        total:
+          type: integer
+          example:
+            7
+        limit:
+          type: integer
+          example:
+            0
+        offset:
+          type: integer
+          example:
+            0
+        errors:
+          type: string
+    OperationMetric:
+      type: object
+      properties:
+        key:
+          type: string
+          description: operation name
+          example:
+            "HTTP GET /customer"
+        error_traces:
+          type: float
+          example:
+            1987
+        error_rate:
+          type: float
+          example:
+            12.2
+        avg_duration:
+          $ref: '#/components/schemas/DurationKeyValue'
+        min_duration:
+          $ref: '#/components/schemas/DurationKeyValue'
+        max_duration:
+          $ref: '#/components/schemas/DurationKeyValue'
+        duration_percentiles:
+          type: array
+          description: value lists
+          items:
+            $ref: '#/components/schemas/DurationKeyValues'
+        total_traces:
+          type: integer
+          example:
+            1999
+
+    DurationKeyValue:
+      type: object
+      properties:
+        value:
+          type: float
+          example:
+            55.6
+
+    DurationKeyValues:
+      type: object
+      properties:
+        values:
+          type: array
+          description: value lists
+          items:
+            $ref: '#/components/schemas/DurationKeyValue'
+
+    ServiceInfo:
+      type: object
+      properties:
+        data:
+          type: array
+          description: service list
+          items:
+            type: string
+            description: service name
+            example:
+              customer
+        total:
+          type: integer
+          example:
+            7
+        limit:
+          type: integer
+          example:
+            0
+        offset:
+          type: integer
+          example:
+            0
+        errors:
+          type: string
+
+    TraceInfo:
+      type: object
+      properties:
+        trace_id:
+          type: string
+          description: trace id
+          example: abc0
+          required: true
+        spans:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpanInfo'
+        processes:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/ProcessInfo'
+        warnings:
+          type: array
+          items:
+            type: string
+          example: null
+    SpanInfo:
+      type: object
+      properties:
+        trace_id:
+          type: string
+          example: abc0
+        span_id:
+          type: string
+          example: abc0
+        operation_name:
+          type: string
+          example: root-span
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReferencesInfo'
+        start_time:
+          type: string
+          description: microseconds since Unixoch ep
+        duration:
+          type: string
+          description: microseconds
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyValue'
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Logs'
+        process_id:
+          type: string
+          example:
+            additionalProp1
+        warnings:
+          type: array
+          items:
+            type: string
+
+    Logs:
+      type: object
+      properties:
+        timestamp:
+          type: string
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyValue'
+          example:
+            "key": "error"
+            "type": "string"
+            "value": "something bad happened"
+
+    ReferencesInfo:
+      type: object
+      properties:
+        ref_type:
+          type: string
+          example: CHILD_OF
+        trace_id:
+          type: string
+          example: abc0
+        span_id:
+          type: string
+          example: abc0
+    ProcessInfo:
+      type: object
+      properties:
+        service_name:
+          type: string
+          description: serviceName
+          example: service_1
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyValue'
+
+    KeyValue:
+      type: object
+      additionalProperties:
+        type: string
+      example:
+        "key": "host"
+        "type": "string"
+        "value": "google.com"
+
+    AlarmRule:
+      type: object
+      properties:
+        namespace:
+          type: string
+          description: namespace
+          example: default
+          required: true
+        service:
+          type: string
+          description: service name
+          example: test-app-service
+          required: true
+        email:
+          type: array
+          items:
+            type: string
+            format: email
+            example: me@163.com
+          required: true
+          description: email
+        phone:
+          type: array
+          items:
+            type: string
+            example: 1387672132
+          required: false
+          description: phone
+        create_at:
+          type: integer
+          format: int64
+          example: 21131231223
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: name
+                required: true
+                example: cpu alarm
+              level:
+                type: string
+                enum:
+                  - warning
+                  - critical
+                  - major
+                  - minor
+                required: true
+                description: err levels
+              expr:
+                deprecated: true
+                type: string
+                description: alarm expr
+                example: job:request_latency_seconds:mean5m{job="myjob"} > 0.5
+                required: true
+              for:
+                type: string
+                description: interval for alarm
+                example: 5m
+                required: true
+              type:
+                type: string
+                enum:
+                  - total_requests
+                  - total_error_requests
+                  - duration
+                description: alarm rule type
+              interval:
+                type: integer
+                format: int64
+                description: interval as seconds
+              threshold:
+                type: integer
+                format: float
+                description: threshold
+                example: 28.2
+
+
+    MatrixItem:
+      properties:
+        metric:
+          type: object
+          properties:
+            destination_version:
+              type: string
+              description: 版本
+        value:
+          type: array
+          description: 时间轴
+          items:
+            type: array
+            minItems: 2
+            maxItems: 2
+            example: [1590974647.363, 12.0]
+            description: first item is timestamp, second item is value.
+            items:
+              type: number
+              format: float
+
+    Page:
+      properties:
+        total:
+          type: integer
+          required: true
+          example: 10
+        page:
+          type: integer
+          required: true
+          example: 1
+        rows:
+          type: integer
+          required: true
+          example: 20
+    Alarm:
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: "default-alarm"
+        level:
+          type: string
+          enum:
+            - critical
+            - warning
+            - major
+            - minor
+          example: critical
+          description:  'critical: 严重告警, major: 主要告警，minor：次要， warning: 警告'
+        service_name:
+          type: string
+          example: example-app
+          description: 服务名
+        pod:
+          type: string
+          description: pod's name
+        status:
+          type: string
+          enum:
+            - unread
+            - read
+          description: 状态
+        begin_at:
+          type: integer
+          format: int64
+          example: 21123123213123
+          description: 开始时间
+        namespace:
+          type: string
+          description: as it
+
+    GrayHistory:
+      properties:
+        id:
+          type: integer
+          format: int64history
+        name:
+          type: string
+          example: "testService-abcdef"
+          description:  '任务名称'
+        service_name:
+          type: string
+          example: "example-app"
+          description:  '服务名'
+        type:
+          type: string
+          example: 金丝雀发布
+        status:
+          type: string
+          example: 发布成功
+          description:  '发布成功；发布失败；发布取消'
+        version:
+          type: string
+          description: 灰度版本号
+        release_time:
+          type: integer
+          format: int64
+          example: 21123123213123
+          description: 发布时间
+    GrayCardList:
+      properties:
+        name:
+          type: string
+          description: '任务名称'
+        namespace:
+          type: string
+          description: '命名空间'
+        service_name:
+          type: string
+          description: '服务名称'
+        describe:
+          type: string
+          description: '描述'
+        type:
+          type: string
+          description: '任务类型'
+        release_status:
+          type: string
+          description: '发布状态 un_deploy 未部署 deploying 部署中 deploy_success 部署成功 deploy_fail 部署失败 deploy_complete 部署策略已下发'
+        create_time:
+          type: integer
+          format: int64
+          description: '创建时间'
+          example: 1591150159
+
+    GrayPhase:
+      properties:
+        name:
+          type: string
+          description: '任务名称'
+        phase:
+          type: string
+          description: '发布状态 un_deploy 未部署 deploying 部署中 deploy_success 部署成功 deploy_fail 部署失败 deploy_complete 部署策略已下发，un_deploy，deploying查询， deploy_success，deploy_complete 跳转到下一步  deploy_final，deploy_fail 失败'
+        message:
+          type: string
+          description: '发生错误时会有错误信息，多个错误信息之间以分号（;）隔开，正常时为空'
+    GrayServiceList:
+      properties:
+        namespace:
+          type: string
+          description: '命名空间'
+        service_name:
+          type: string
+          description: '服务名称'
+        status:
+          type: integer
+          description: '状态 这里返回均为2 运行中'
+        version:
+          type: string
+          description: '版本号'
+
+
+    GrayDeploy:
+      required:
+        - namespace
+        - service_name
+        - type
+        - name
+        - version
+      properties:
+        namespace:
+          type: string
+          description: '命名空间 只能填写已经创建的，只能是小写字母，中划线，数字,开头和结尾不能是中划线'
+          example: default
+        service_name:
+          type: string
+          description: '服务名称 全都是小写,只能填写已经创建的'
+          example: nginx
+        type:
+          type: string
+          description: 'canary 金丝雀发布'
+          example: canary
+        name:
+          type: string
+          description: '任务名称，自动生成'
+        version:
+          type: string
+          description: '版本号 小写字母，数字，中划线，点组成的2到50位字符'
+        describe:
+          type: string
+          description: '可选，200个字符以内'
+    GrayDelete:
+      required:
+        - namespace
+        - name
+      properties:
+        namespace:
+          type: string
+          description: '命名空间 只能填写已经创建的，只能是小写字母，中划线，数字,开头和结尾不能是中划线'
+        name:
+          type: string
+          description: '任务名称'
+    GraySwitch:
+      required:
+        - namespace
+        - name
+        - status
+        - version
+      properties:
+        namespace:
+          type: string
+          description: '命名空间 只能填写已经创建的，只能是小写字母，中划线，数字,开头和结尾不能是中划线'
+        name:
+          type: string
+          description: '灰度任务名称'
+        status:
+          type: integer
+          description: '处理状态 1 接管流量 2 下线'
+        version:
+          type: string
+          description: '灰度版本'
+    GrayInfo:
+      properties:
+        namespace:
+          type: string
+          description: '命名空间 只能填写已经创建的，只能是小写字母，中划线，数字,开头和结尾不能是中划线'
+        name:
+          type: string
+          description: '灰度任务名称'
+        old_version:
+          type: string
+          description: '原服务版本'
+        new_version:
+          type: string
+          description: '灰度任务版本'
+        old_replicas:
+          type: integer
+          description: '原服务实例数'
+        new_replicas:
+          type: integer
+          description: '灰度服务实例数'
+        old_traffic:
+          type: integer
+          description: '原服务流量占比'
+        new_traffic:
+          type: integer
+          description: '灰度服务流量占比'
+        strategy:
+          type: string
+          description: '灰度流量策略  header 请求内容  traffic 流量'
+        header_match:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrayHeaderMatch'
+        message:
+          type: string
+          description: '错误信息--待定，暂时返回为""'
+    GrayHeaderMatch:
+      properties:
+        header_type:
+          type: string
+          description: '请求内容类型  header 请求头 cookie cookie'
+        match_rule:
+          type: array
+          items:
+            $ref: '#/components/schemas/HeaderMatch'
+    GrayImage:
+      required:
+        - namespace
+        - name
+        - image_name
+        - image_version
+        - replicas
+        - deployment_name
+      properties:
+        namespace:
+          type: string
+          description: '命名空间 只能填写已经创建的，只能是小写字母，中划线，数字,开头和结尾不能是中划线'
+        name:
+          type: string
+          description:  '灰度任务名称'
+        image_name:
+          type: string
+          description:  '镜像名称'
+        image_version:
+          type: string
+          description:  '镜像版本'
+        replicas:
+          type: integer
+          description:  '副本数'
+        deployment_name:
+          type: string
+          description:  'deployment name'
+    GrayStrategy:
+      required:
+        - namespace
+        - name
+        - strategy
+      properties:
+        namespace:
+          type: string
+          description: '命名空间 只能填写已经创建的，只能是小写字母，中划线，数字,开头和结尾不能是中划线'
+        name:
+          type: string
+          description:  '灰度任务名称'
+        strategy:
+          type: string
+          description:  'enum: traffic; header'
+          example: traffic
+        gray_traffic:
+          type: integer
+          description:  '灰度版本流量比例'
+        header_match:
+          type: array
+          items:
+            $ref: '#/components/schemas/HeaderMatch'
+        replicas:
+          type: integer
+          description:  '灰度实例数'
+    HeaderMatch:
+      properties:
+        name:
+          type: string
+          description:  '请求头key'
+        value:
+          type: string
+          description:  '请求头value'
+        type:
+          type: string
+          enum:
+            - equals
+            - regex
+          description:  '匹配规则'
+
+    VersionedTrafficPercent:
+      type: array
+      description: 服务流量比例，按版本分。
+      items:
+        type: object
+        description: 单个版本的流量占比。
+        properties:
+          name:
+            type: string
+            description: 版本名。
+          value:
+            type: number
+            format: float64
+            description: 流量占比。
+
+    NodeData:
+      type: object
+      description: 拓扑图节点数据。
+      properties:
+        id:
+          type: string
+          description: 节点 ID，格式为 namespace/serviceName
+        parent:
+          type: string
+          description: 父节点 ID，为空表示根节点。
+        type:
+          type: string
+          description: 节点类型，工作负载或服务。
+          enum:
+            - service
+            - workload
+        namespace:
+          type: string
+          description: 所属租户。
+        name:
+          type: string
+          description: 名字。
+        children:
+          type: array
+          description: 子节点，如果节点是 Service 的话，那么子节点就是 Pod。
+          items:
+            $ref: "#/definitions/NodeData"
+        status:
+          type: object
+          description: 节点状态信息。
+          properties:
+            replicas:
+              type: integer
+              description: 服务 replicas 总数。
+            available_replicas:
+              type: integer
+              description: 服务可用 replicas 数。
+        traffics:
+          type: array
+          items:
+            $ref: "#/definitions/GraphTraffic"
+
+
+  parameters:
+    Namespaces:
+      name: namespaces
+      in: query
+      schema:
+        type: string
+      required: true
+      description: namespaces, 以 , 分隔。
+    Service:
+      name: service
+      in: path
+      schema:
+        type: string
+      required: true
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+    Rows:
+      name: rows
+      in: query
+      required: false
+      schema:
+        type: integer
+    Sort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+      description: 排序字段，某些接口支持。
+    Reverse:
+      name: reverse
+      in: query
+      schema:
+        type: boolean
+      description: 是否需要倒序。
+    Search:
+      name: search
+      in: query
+      required: false
+      schema:
+        type: string
+      description: '搜索，格式为 field_name:value ，匹配规则为 Contains，如果需要完全匹配，则用 field_name:"value"'

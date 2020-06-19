@@ -112,7 +112,19 @@
                     <td th:if="${!request.require}" th:text="N"></td>
                     <td th:text="${request.remark}"></td>
                 </tr>
+                <tr class="bg" align="center">
+                    <td>请求类名</td>
+                    <td>请求属性名</td>
+                    <td>类型</td>
+                    <td colspan="2">说明</td>
+                </tr>
     
+                <tr align="center" th:each="request:${table.requestModeAttrList}">
+                    <td th:text="${request.className}"></td>
+                    <td th:text="${request.value}"></td>
+                    <td th:text="${request.type}"></td>
+                    <td colspan="2" th:text="${request.name}"></td>
+                </tr>
                 <tr class="bg" align="center">
                     <td>状态码</td>
                     <td colspan="2">描述</td>

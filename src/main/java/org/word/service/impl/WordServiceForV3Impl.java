@@ -38,8 +38,8 @@ import lombok.extern.slf4j.Slf4j;
  **/
 @SuppressWarnings({"unchecked", "rawtypes"})
 @Slf4j
-@Service("wordServiceImpl")
-public class WordServiceImpl implements WordService {
+@Service("wordServiceForV3Impl")
+public class WordServiceForV3Impl implements WordService {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -73,70 +73,106 @@ public class WordServiceImpl implements WordService {
                 while (it.hasNext()) {
                     Map.Entry<String, Map<String, Object>> path = it.next();
 
-                    Iterator<Map.Entry<String, Object>> it2 = path.getValue().entrySet().iterator();
+                    Iterator<Map.Entry<String, Object>> pathMethod = path.getValue().entrySet().iterator();
                     // 1.请求路径
                     String url = path.getKey();
-                    
-                    // 2.请求方式，类似为 get,post,delete,put 这样
-                    String requestType = StringUtils.join(path.getValue().keySet(), ",");
-                    
-                    // 3. 不管有几种请求方式，都只解析第一种
-                    Map.Entry<String, Object> firstRequest = it2.next();
-                    Map<String, Object> content = (Map<String, Object>)firstRequest.getValue();
-                    
-                    // 4. 大标题（类说明）
-                    String title = String.valueOf(((List) content.get("tags")).get(0));
-                    
-                    // 5.小标题 （方法说明）
-                    String tag = String.valueOf(content.get("summary"));
-                    
-                    // 6.接口描述
-                    String description = String.valueOf(content.get("summary"));
-                    
-                    // 7.请求参数格式，类似于 multipart/form-data
-                    String requestForm = "";
-                    List<String> consumes = (List) content.get("consumes");
-                    if (consumes != null && consumes.size() > 0) {
-                        requestForm = StringUtils.join(consumes, ",");
-                    }
-                    
-                    // 8.返回参数格式，类似于 application/json
-                    String responseForm = "";
-                    List<String> produces = (List) content.get("produces");
-                    if (produces != null && produces.size() > 0) {
-                        responseForm = StringUtils.join(produces, ",");
-                    }
-                    
-                    // 9. 请求体
-                    List<LinkedHashMap> parameters = (ArrayList) content.get("parameters");
-                    
-                    // 10.返回体
-                    Map<String, Object> responses = (LinkedHashMap) content.get("responses");
+                    // 遍历请求方法
+                    while (pathMethod.hasNext()) {
+                        // 3. 解析请求方式
+                        Map.Entry<String, Object> request = pathMethod.next();
+                        
+                        // 2.请求方式，类似为 get,post,delete,put 这样
+                        //String requestType = StringUtils.join(path.getValue().keySet(), ",");
+                        String requestType = request.getKey();
+                        // 跳过parameters配置
+                        if ("parameters".equalsIgnoreCase(requestType)) {
+                            continue;
+                        }
+                        //封装Table
+                        Table table = new Table();
+                        
+                        table.setUrl(url);
+                        //table.setResponseForm(responseForm);
+                        table.setRequestType(requestType);
+                        
+                        // 解析请求内容
+                        Map<String, Object> content = (Map<String, Object>)request.getValue();
 
-                    //封装Table
-                    Table table = new Table();
-                    
-                    table.setTitle(title);
-                    table.setUrl(url);
-                    table.setTag(tag);
-                    table.setDescription(description);
-                    table.setRequestForm(requestForm);
-                    table.setResponseForm(responseForm);
-                    table.setRequestType(requestType);
-                    table.setRequestList(processRequestList(parameters));
-                    table.setResponseList(processResponseCodeList(responses));
-                    
-                    // 取出来状态是200时的返回值
-                    Map<String, Object> obj = (Map<String, Object>)responses.get("200");
-                    if (obj != null && obj.get("schema")!=null) {
-	                    table.setResponseModeAttrList(processResponseModelAttrs(obj, definitinMap));
+                        // 4. 大标题（类说明）
+                        String title = String.valueOf(((List) content.get("tags")).get(0));
+                        table.setTitle(title);
+
+                        
+                        // 5.小标题 （方法说明）
+                        String tag = String.valueOf(content.get("summary"));
+                        table.setTag(tag);
+
+                        
+                        // 6.接口描述
+                        String description = String.valueOf(content.get("summary"));
+                        table.setDescription(description);
+
+                        
+                        // 请求参数
+                        // 7.1 parameters
+                        List<LinkedHashMap> parameters = new ArrayList<>();
+                        if (path.getValue().get("parameters") != null) {
+                            parameters.addAll((ArrayList) path.getValue().get("parameters"));
+                        }
+                        if (content.get("parameters") != null) {
+                            parameters.addAll((ArrayList) content.get("parameters"));
+                        }
+                        table.setRequestList(processRequestList(parameters));
+                        // 7.2 body
+                        //String requestForm = "";
+                        Map<String, Object> requestBody = (Map<String, Object>) content.get("requestBody");
+                        if (requestBody != null && requestBody.get("content") != null) {
+                            for (Map.Entry<String, Object> entry : ((Map<String, Object>) requestBody.get("content")).entrySet()) {
+                                table.setRequestForm(entry.getKey());
+                                table.setRequestModeAttrList(processResponseModelAttrs((Map<String, Object>)entry.getValue(), definitinMap));
+                            }
+                        }
+                        /*// 7.请求参数格式，类似于 multipart/form-data
+                        if (content.containsKey("consumes")) {
+                            List<String> consumes = (List) content.get("consumes");
+                            if (consumes != null && consumes.size() > 0) {
+                                requestForm = StringUtils.join(consumes, ",");
+                            }
+                        }*/
+                        
+                        // 8.返回参数格式，类似于 application/json
+                        /*String responseForm = "";
+                        if (content.containsKey("produces")) {
+                            List<String> produces = (List) content.get("produces");
+                            if (produces != null && produces.size() > 0) {
+                                responseForm = StringUtils.join(produces, ",");
+                            }
+                        }*/
+                        
+                        // 9. 请求体
+                        
+                        
+                        // 10.返回体
+                        Map<String, Object> responses = (LinkedHashMap) content.get("responses");
+    
+                        table.setResponseList(processResponseCodeList(responses));
+                        
+                        // 取出来状态是200时的返回值
+                        Map<String, Map<String, Object>> obj = (Map)responses.entrySet().iterator().next().getValue();//.get("200");
+                        if (obj != null && obj.get("content")!=null) {
+                            table.setResponseForm(StringUtils.join(obj.get("content").keySet(), ","));
+                            for (Map.Entry<String, Object> entry : obj.get("content").entrySet()) {
+                                table.setResponseModeAttrList(processResponseModelAttrs((Map<String, Object>)entry.getValue(), definitinMap));
+                                //示例
+                                table.setRequestParam(JsonUtils.writeJsonStr(buildParamMap(table.getRequestList(), map)));
+                                table.setResponseParam(processResponseParam((Map<String, Object>)entry.getValue(), map));
+                            }
+                        }
+                        
+                        
+                        result.add(table);
                     }
-                    
-                    //示例
-                    table.setRequestParam(JsonUtils.writeJsonStr(buildParamMap(table.getRequestList(), map)));
-                    table.setResponseParam(processResponseParam(obj, map));
-                    
-                    result.add(table);
+
                 }
                 
                 //排序，同类别的接口归并在一起
@@ -218,7 +254,7 @@ public class WordServiceImpl implements WordService {
                     request.setRequire(false);
                 }
                 request.setRemark(String.valueOf(param.get("description")));
-                request.setParamType(request.getParamType().replaceAll("#/definitions/", ""));
+                request.setParamType(request.getParamType().replaceAll("#/components/schemas/", ""));
                 requestList.add(request);
             }
         }
@@ -275,14 +311,21 @@ public class WordServiceImpl implements WordService {
         
         if(StringUtils.isNotBlank(ref)) {
         	Map<String, Object> mode = (Map<String,Object>)definitinMap.get(ref);
+        	if (mode != null) {
+                ResponseModelAttr attr=new ResponseModelAttr();
+                attr.setClassName(ref);
+                attr.setName((String)mode.get("description"));
+                attr.setType(StringUtils.defaultIfBlank(type, StringUtils.EMPTY));
+                attrList.add(attr);
+                
+                attrList.addAll((List<ResponseModelAttr>)mode.get("properties"));
+            } else {
+                ResponseModelAttr attr=new ResponseModelAttr();
+                attr.setName(ref);
+                attr.setType(StringUtils.defaultIfBlank(type, StringUtils.EMPTY));
+                attrList.add(attr);
+            }
         	
-        	ResponseModelAttr attr=new ResponseModelAttr();
-        	attr.setClassName((String)mode.get("title"));
-        	attr.setName((String)mode.get("description"));
-        	attr.setType(StringUtils.defaultIfBlank(type, StringUtils.EMPTY));
-        	attrList.add(attr);
-        	
-        	attrList.addAll((List<ResponseModelAttr>)mode.get("properties"));
         }
     	return attrList;
     }
@@ -293,7 +336,8 @@ public class WordServiceImpl implements WordService {
      * @return
      */
     private Map<String, Object> parseDefinitions(Map<String, Object> map){
-    	Map<String, Map<String, Object>> definitions = (Map<String, Map<String, Object>>) map.get("definitions");
+        Map<String, Object> components = (Map<String, Object>) map.get("components");
+    	Map<String, Map<String, Object>> definitions = (Map<String, Map<String, Object>>) components.get("schemas");
         Map<String, Object> definitinMap = new HashMap<String, Object>();
         if(definitions!=null) {
         	Iterator<String> modelNameIt=definitions.keySet().iterator();
@@ -331,7 +375,7 @@ public class WordServiceImpl implements WordService {
 				mode.put("description", definitions.get(modeName).get("description"));
 				mode.put("properties", attrList);
 				
-				definitinMap.put("#/definitions/"+modeName, mode);
+				definitinMap.put("#/components/schemas/"+modeName, mode);
 			}
         }
         return definitinMap;

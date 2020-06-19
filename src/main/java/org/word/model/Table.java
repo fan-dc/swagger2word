@@ -57,6 +57,9 @@ public class Table {
      * 请求参数
      */
     private String requestParam;
+    
+    /** 请求体 */
+    private List<ResponseModelAttr> requestModeAttrList;
 
     /**
      * 返回参数
